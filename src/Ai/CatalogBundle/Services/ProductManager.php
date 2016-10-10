@@ -13,79 +13,98 @@
 
 namespace Ai\CatalogBundle\Services;
 
-
+use Ai\CatalogBundle\Entity\Product;
+use Ai\CatalogBundle\Entity\User;
+use Knp\Component\Pager\PaginatorInterface;
 use Doctrine\ORM\EntityManager;
-use Symfony\Component\HttpFoundation\Request;
 
 /**
  * Class ProductManager
- * 
+ *
  * @package Ai\CatalogBundle\Services
  */
 class ProductManager
 {
+    const numItemsPerPage = 10;
+
     protected $em;
+
+    protected $paginator;
 
     /**
      * ProductManager constructor.
+     *
      * @param EntityManager $em
      */
-    public function __construct(EntityManager $em)
+    public function __construct(EntityManager $em, PaginatorInterface $paginator)
     {
-        $this->em=$em;
+        $this->em = $em;
+        $this->paginator = $paginator;
     }
 
     /**
-     * Finds all entities in the repository.
+     * @param array  $fields selected fields array
+     * @param string $search search by product name and description
+     * @param array  $tags   search by tags name
+     * @param int    $page   page num
+     * @param int    $limit  num per page
      *
-     * @return array The entities.
+     * @return array products array and pagination data
      */
-    public function findAll()
+    public function findAll(
+        array  $fields = null,
+        string $search = null,
+        array  $tags   = null,
+        int    $page   = null,
+        int    $limit  = null
+    ) : array
     {
-        $this->em->getRepository('Product')->findAll();
+        $query = $this->em
+            ->getRepository('AiCatalogBundle:Product')
+            ->findBySearchQuery(
+                $fields,
+                $search,
+                $tags
+            );
+
+        /** @var SlidingPagination $pagination */
+        $pagination = $this->paginator->paginate(
+            $query,
+            intval($page ?? 1),
+            intval($limit ?? self::numItemsPerPage)
+        );
+
+        return [
+            'items' => $pagination->getItems(),
+            'paginationData' => $pagination->getPaginationData(),
+        ];
+    }
+
+
+    public function create(array $data, User $user) : bool
+    {
+        $data = [
+            'name' => 'New product',
+            'descr' => 'New product descr',
+            'price' => 245.04,
+            'category' => 'New Category',
+            'tags' => ['article', 'news', 'economic', 'politic']
+        ];
+
+
+    }
+
+    public function update(Product $product, array $data) : bool
+    {
+
     }
 
     /**
-     * Finds entities by a set of criteria.
-     *
-     * @param array      $criteria
-     * @param array|null $orderBy
-     * @param int|null   $limit
-     * @param int|null   $offset
-     *
-     * @return array The objects.
+     * @param Product $product
      */
-    public function findBy(array $criteria, array $orderBy = null, $limit = null, $offset = null)
-    {
-        $this->em->getRepository('Product')->findBy($criteria, $orderBy, $limit, $offset);
-    }
-
-    /**
-     * Finds a single entity by a set of criteria.
-     *
-     * @param array $criteria
-     * @param array|null $orderBy
-     *
-     * @return object|null The entity instance or NULL if the entity can not be found.
-     */
-    public function findOneBy(array $criteria, array $orderBy = null)
-    {
-        $this->em->getRepository('Product')->findOneBy($criteria, $orderBy);
-    }
-
-
-    public function create(Request $request)
-    {
-
-    }
-
-    public function update(Product $product, Request $request)
-    {
-
-    }
-
     public function delete(Product $product)
     {
-
+        $this->em->remove($product);
+        $this->em->flush();
     }
 }

@@ -1,6 +1,19 @@
 <?php
+/**
+ * AiCatalogBundle
+ *
+ * PHP Version 7
+ *
+ * @category Repository
+ * @package  Ai\CatalogBundle\Repository
+ * @author   Ruslan Muriev <ruslana.net@gmail.com>
+ * @license  https://github.com/ruslana-net/ai-catalog-api/LICENSE MIT License
+ * @link     https://github.com/ruslana-net/ai-catalog-api
+ */
 
 namespace Ai\CatalogBundle\Repository;
+
+use \Doctrine\ORM\Query;
 
 /**
  * ProductRepository
@@ -10,4 +23,81 @@ namespace Ai\CatalogBundle\Repository;
  */
 class ProductRepository extends \Doctrine\ORM\EntityRepository
 {
+    /**
+     * @param array|null  $fields     selected fields array
+     * @param string|null $search     search by name and descr
+     * @param array|null  $tags       search by tags name
+     * @param int|null    $maxResults limit
+     *
+     * @return Query
+     */
+    public function findBySearchQuery(
+        array  $fields     = null,
+        string $search     = null,
+        array  $tags       = null,
+        int    $maxResults = null
+    ) : Query
+    {
+        $qb = $this->createQueryBuilder('a');
+
+        $metaData = $this->getClassMetadata();
+
+        if(!empty($fields)){
+            $select = [];
+            foreach($fields as $field){
+                if($metaData->hasField($field)){
+                    $select[] = "a.$field";
+                }
+            }
+            $select = implode(', ', $select) ?? 'a.id, a.name, a.descr';
+        }
+
+        $qb
+            ->select($select)
+            ->orderBy('a.position', 'DESC')
+            ->where("a.enabled=1");
+
+        if (null != $search) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    $qb->expr()->like('a.name', ':search'),//TODO add indexes
+                    $qb->expr()->like('a.descr', ':search')
+                )
+            );
+            $qb->setParameter('search', $search . '%');
+        }
+
+        if (!empty($tags)) {
+            $qb->leftJoin('a.tags', 't');
+            $orX = $qb->expr()->orX();
+
+            foreach ($tags as $k => $tag) {
+                $orX->add($qb->expr()->eq("t.name", ":tag$k"));
+                $qb->setParameter("tag$k", $tag);
+            }
+
+            if ($orX->count() > 0) {
+                $qb->andWhere($orX);
+            }
+        }
+
+        if (null !== $maxResults) {
+            $qb->setMaxResults($maxResults);
+        }
+
+        return $qb->getQuery();
+    }
+
+    /**
+     * Search by tags
+     *
+     * @param array $tags tags array
+     * @param int|null $maxResults limit
+     *
+     * @return Query
+     */
+    public function findByTags(array $tags, int $maxResults = null) : Query
+    {
+        return $this->findBySearchQuery(null, $tags, $maxResults);
+    }
 }

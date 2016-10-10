@@ -14,9 +14,12 @@
 namespace Ai\CatalogBundle\Controller;
 
 use Ai\CatalogBundle\Entity\Product;
+use Ai\CatalogBundle\Services\ProductManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
+use FOS\RestBundle\Controller\FOSRestController;
+use FOS\RestBundle\Controller\Annotations\View;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
 use FOS\RestBundle\Controller\Annotations\Delete;
 use FOS\RestBundle\Controller\Annotations\Get;
@@ -28,18 +31,8 @@ use FOS\RestBundle\Controller\Annotations\Put;
  * 
  * @package Ai\CatalogBundle\Controller
  */
-class ProductApiController extends Controller
+class ProductApiController extends FOSRestController
 {
-    protected $securityContext;
-
-    protected $pm;
-
-    public function __construct()
-    {
-        $this->securityContext = $this->get("security.context");
-        $this->pm = $this->get("ai_catalog.product_manager");
-    }
-
     /**
      * @param Request $request
      * @throws AccessDeniedException
@@ -48,7 +41,7 @@ class ProductApiController extends Controller
      *     description="Creates a product for the authenticated user",
      *     parameters={
      *         {"name"="name", "dataType"="string",  "required"=true,  "description"="The product name"},
-     *         {"name"="descr", "dataType"="string", "required"=false, "description"="The product description"}
+     *         {"name"="descr", "dataType"="string", "required"=false, "description"="The product description"},
      *         {"name"="price", "dataType"="float",  "required"=false, "description"="The product price"}
      *      },
      *      statusCodes={
@@ -63,11 +56,11 @@ class ProductApiController extends Controller
     public function createAction(Request $request)
     {
         /** @var \Ai\CatalogBundle\Entity\User $user */
-        if (!$user = $this->securityContext->getToken()->getUser()) {
+        if (!$user = $this->get("security.token_storage")->getToken()->getUser()) {
             throw new AccessDeniedException();
         }
 
-        return $this->pm->create($request);
+        return $this->get("ai_catalog.product_manager")->create($request, $user);
     }
 
     /**
@@ -79,7 +72,7 @@ class ProductApiController extends Controller
      *     description="Updates a product of the authenticated user",
      *     parameters={
      *         {"name"="title", "dataType"="string", "required"=true, "description"="The product title"},
-     *         {"name"="descr", "dataType"="string", "required"=true, "description"="The product description"}
+     *         {"name"="descr", "dataType"="string", "required"=true, "description"="The product description"},
      *         {"name"="price", "dataType"="float",  "required"=true, "description"="The product price"}
      *      },
      *      statusCodes={
@@ -94,7 +87,7 @@ class ProductApiController extends Controller
     public function updateAction(Request $request, Product $product)
     {
         /** @var \Ai\CatalogBundle\Entity\User $user */
-        if (!$user = $this->securityContext->getToken()->getUser()) {
+        if (!$user = $this->get("security.token_storage")->getToken()->getUser()) {
             throw new AccessDeniedException();
         }
 
@@ -103,7 +96,7 @@ class ProductApiController extends Controller
             throw new AccessDeniedException();
         }
 
-        return $this->pm->update($product, $request);
+        return $this->get("ai_catalog.product_manager")->update($product, $request);
     }
 
     /**
@@ -124,25 +117,61 @@ class ProductApiController extends Controller
     public function deleteAction(Product $product)
     {
         /** @var \Ai\CatalogBundle\Entity\User $user */
-        if (!$user = $this->securityContext->getToken()->getUser()) {
+        if (!$user = $this->get("security.token_storage")->getToken()->getUser()) {
             throw new AccessDeniedException();
         }
 
         //If product dosn't create current user throw exceptions
-        if ($product->getUser()->getId() !== $user->getId()) {
-            throw new AccessDeniedException();
-        }
+//        if ($product->getUser()->getId() !== $user->getId()) {
+//            throw new AccessDeniedException();
+//        }
 
-        return $this->pm->delete($product);
+        return $this->get("ai_catalog.product_manager")->delete($product);
     }
 
-    public function getAllAction()
+    /**
+     * @ApiDoc(
+     *     description="Gets all products",
+     *     filters={
+     *         {"name"="search", "dataType"="string"},
+     *         {"name"="tags", "dataType"="array"},
+     *         {"name"="limit", "dataType"="integer"},
+     *         {"name"="fields", "dataType"="array"}
+     *     },
+     *     statusCodes={
+     *         200="When successful"
+     *     }
+     * )
+     * @Get("/product", name="catalog_rest_products_getall", defaults={"_format" = "json"})
+     * @View
+     */
+    public function getAllAction(Request $request)
     {
-
+        return $this->get("ai_catalog.product_manager")->findAll(
+            $request->query->get("fields"),
+            $request->query->get('search'),
+            $request->query->get("tags"),
+            $request->query->get("limit")
+        );
     }
 
-    public function getAction()
+    /**
+     * @param Product $product
+     *
+     * @ApiDoc(
+     *     description="Gets a product",
+     *     statusCodes={
+     *         404="When the product does not exist",
+     *         200="When successful"
+     *     }
+     * )
+     * @Get("/product/{id}", name="catalog_rest_product_get",
+     *     requirements={"id" = "\d+"}, defaults={"_format" = "json"}
+     * )
+     * @View
+     */
+    public function getAction(Product $product)
     {
-
+        return $product;
     }
 }

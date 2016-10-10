@@ -65,7 +65,7 @@ class Product
 
     /**
      * @ORM\ManyToMany(targetEntity="Tag", inversedBy="products")
-     * @ORM\JoinTable(name="products_tags")
+     * @ORM\JoinTable(name="catalog_products_tags")
      */
     private $tags;
 

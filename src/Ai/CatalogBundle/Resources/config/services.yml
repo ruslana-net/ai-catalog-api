@@ -1,4 +1,4 @@
 services:
     ai_catalog.product_manager:
         class: Ai\CatalogBundle\Services\ProductManager
-        arguments: ["@doctrine.orm.default_entity_manager"]
+        arguments: ["@doctrine.orm.default_entity_manager", "@knp_paginator"]

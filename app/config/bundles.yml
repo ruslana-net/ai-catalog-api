@@ -1,3 +1,13 @@
+#Doctrine extentions
+stof_doctrine_extensions:
+    default_locale: %locale%
+    translation_fallback: true
+    orm:
+        default:
+          sluggable: true
+          timestampable: true
+          sortable: true
+
 # User
 fos_user:
     db_driver: orm
@@ -16,7 +26,12 @@ fos_oauth_server:
 
 # Rest
 fos_rest:
-    body_listener: true
+    param_fetcher_listener: true
+    format_listener:
+        rules:
+            fallback_format: json
+            prefer_extension: false
+            priorities: [json]
     view:
         view_response_listener: force
 

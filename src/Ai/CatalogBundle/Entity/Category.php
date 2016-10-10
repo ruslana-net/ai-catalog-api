@@ -63,12 +63,14 @@ class Category
     {
         return $this->id;
     }
+
     /**
      * Constructor
      */
-    public function __construct()
+    public function __construct(string $name = null)
     {
         $this->products = new \Doctrine\Common\Collections\ArrayCollection();
+        $this->name = $name;
     }
 
     /**
