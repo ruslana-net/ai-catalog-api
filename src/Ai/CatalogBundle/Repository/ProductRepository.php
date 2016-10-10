@@ -42,15 +42,16 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
 
         $metaData = $this->getClassMetadata();
 
+        $select = [];
         if(!empty($fields)){
-            $select = [];
+
             foreach($fields as $field){
                 if($metaData->hasField($field)){
                     $select[] = "a.$field";
                 }
             }
-            $select = implode(', ', $select) ?? 'a.id, a.name, a.descr';
         }
+        $select = $select ? implode(', ', $select) : 'a.id, a.name, a.descr';
 
         $qb
             ->select($select)
