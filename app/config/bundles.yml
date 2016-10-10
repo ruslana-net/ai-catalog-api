@@ -1,0 +1,24 @@
+# User
+fos_user:
+    db_driver: orm
+    firewall_name: none
+    user_class: Ai\CatalogBundle\Entity\User
+
+# Oauth
+fos_oauth_server:
+    db_driver: orm
+    client_class:        Ai\CatalogBundle\Entity\Client
+    access_token_class:  Ai\CatalogBundle\Entity\AccessToken
+    refresh_token_class: Ai\CatalogBundle\Entity\RefreshToken
+    auth_code_class:     Ai\CatalogBundle\Entity\AuthCode
+    service:
+        user_provider: fos_user.user_manager
+
+# Rest
+fos_rest:
+    body_listener: true
+    view:
+        view_response_listener: force
+
+# Api Doc
+nelmio_api_doc: ~
