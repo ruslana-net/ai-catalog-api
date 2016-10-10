@@ -1,0 +1,4 @@
+ai_catalog:
+    resource: "@AiCatalogBundle/Resources/config/routing.yml"
+    prefix:   /
+
