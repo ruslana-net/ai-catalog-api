@@ -1,4 +1,4 @@
 services:
-#    ai_catalog.example:
-#        class: Ai\CatalogBundle\Example
-#        arguments: ["@service_id", "plain_value", %parameter%]
+    ai_catalog.product_manager:
+        class: Ai\CatalogBundle\Services\ProductManager
+        arguments: ["@doctrine.orm.default_entity_manager"]
