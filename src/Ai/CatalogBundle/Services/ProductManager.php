@@ -44,8 +44,8 @@ class ProductManager
 
     /**
      * @param array  $fields selected fields array
-     * @param string $search search by product name and description
      * @param array  $tags   search by tags name
+     * @param string $search search by product name and description
      * @param int    $page   page num
      * @param int    $limit  num per page
      *
@@ -53,8 +53,8 @@ class ProductManager
      */
     public function findAll(
         array  $fields = null,
-        string $search = null,
         array  $tags   = null,
+        string $search = null,
         int    $page   = null,
         int    $limit  = null
     ) : array
@@ -63,8 +63,8 @@ class ProductManager
             ->getRepository('AiCatalogBundle:Product')
             ->findBySearchQuery(
                 $fields,
-                $search,
-                $tags
+                $tags,
+                $search
             );
 
         /** @var SlidingPagination $pagination */

@@ -28,7 +28,7 @@ use FOS\RestBundle\Controller\Annotations\Put;
 
 /**
  * Class ProductApiController
- * 
+ *
  * @package Ai\CatalogBundle\Controller
  */
 class ProductApiController extends FOSRestController
@@ -122,9 +122,9 @@ class ProductApiController extends FOSRestController
         }
 
         //If product dosn't create current user throw exceptions
-//        if ($product->getUser()->getId() !== $user->getId()) {
-//            throw new AccessDeniedException();
-//        }
+        if ($product->getUser()->getId() !== $user->getId()) {
+            throw new AccessDeniedException();
+        }
 
         return $this->get("ai_catalog.product_manager")->delete($product);
     }
@@ -133,10 +133,11 @@ class ProductApiController extends FOSRestController
      * @ApiDoc(
      *     description="Gets all products",
      *     filters={
+     *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr"},
+     *         {"name"="tags", "dataType"="string", "pattern"="news,articles"},
      *         {"name"="search", "dataType"="string"},
-     *         {"name"="tags", "dataType"="array"},
-     *         {"name"="limit", "dataType"="integer"},
-     *         {"name"="fields", "dataType"="array"}
+     *         {"name"="page", "dataType"="integer"},
+     *         {"name"="limit", "dataType"="integer"}
      *     },
      *     statusCodes={
      *         200="When successful"
@@ -147,10 +148,19 @@ class ProductApiController extends FOSRestController
      */
     public function getAllAction(Request $request)
     {
+        $fields = $request->query->get("fields")
+            ? explode(',', $request->query->get("fields"))
+            : null;
+
+        $tags = $request->query->get("tags")
+            ? explode(',', $request->query->get("tags"))
+            : null;
+
         return $this->get("ai_catalog.product_manager")->findAll(
-            $request->query->get("fields"),
+            $fields,
+            $tags,
             $request->query->get('search'),
-            $request->query->get("tags"),
+            $request->query->get("page"),
             $request->query->get("limit")
         );
     }

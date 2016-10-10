@@ -25,16 +25,16 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
 {
     /**
      * @param array|null  $fields     selected fields array
-     * @param string|null $search     search by name and descr
      * @param array|null  $tags       search by tags name
+     * @param string|null $search     search by name and descr
      * @param int|null    $maxResults limit
      *
      * @return Query
      */
     public function findBySearchQuery(
         array  $fields     = null,
-        string $search     = null,
         array  $tags       = null,
+        string $search     = null,
         int    $maxResults = null
     ) : Query
     {
@@ -44,10 +44,9 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
 
         $select = [];
         if(!empty($fields)){
-
             foreach($fields as $field){
                 if($metaData->hasField($field)){
-                    $select[] = "a.$field";
+                    $select[] = "a.".trim($field);
                 }
             }
         }
@@ -58,7 +57,7 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
             ->orderBy('a.position', 'DESC')
             ->where("a.enabled=1");
 
-        if (null != $search) {
+        if (!$search) {
             $qb->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->like('a.name', ':search'),//TODO add indexes
@@ -67,7 +66,7 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
             );
             $qb->setParameter('search', $search . '%');
         }
-
+        
         if (!empty($tags)) {
             $qb->leftJoin('a.tags', 't');
             $orX = $qb->expr()->orX();
@@ -92,13 +91,13 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
     /**
      * Search by tags
      *
-     * @param array $tags tags array
+     * @param array    $tags       tags array
      * @param int|null $maxResults limit
      *
      * @return Query
      */
     public function findByTags(array $tags, int $maxResults = null) : Query
     {
-        return $this->findBySearchQuery(null, $tags, $maxResults);
+        return $this->findBySearchQuery(null, $tags, null, $maxResults);
     }
 }
