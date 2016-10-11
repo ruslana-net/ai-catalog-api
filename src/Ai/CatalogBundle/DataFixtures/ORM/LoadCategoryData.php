@@ -16,17 +16,19 @@ namespace Ai\CatalogBundle\DataFixtures\ORM;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
-use Ai\CatalogBundle\Entity\User;
+use Ai\CatalogBundle\Entity\Category;
 
 /**
- * Class LoadUserData User Data Fixtures
+ * Class LoadCategoryData User Data Fixtures
  *
  * @package Ai\CatalogBundle\DataFixtures\ORM
  */
-class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
+class LoadCategoryData extends AbstractFixture implements OrderedFixtureInterface
 {
+    const CATEGORIES = ['food', 'furniture', 'phones'];
+
     /**
-     * Load users fixtures
+     * Load categories fixtures
      *
      * @param ObjectManager $manager
      *
@@ -34,15 +36,16 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
      */
     public function load(ObjectManager $manager)
     {
-        $user = new User();
-        $user->setUsername('admin');
-        $user->setEmail('admin@test.com');
-        $user->setPassword('123456');
+        foreach (self::CATEGORIES as $k => $categoryName) {
+            $category = (new Category($categoryName))
+                ->setDescr($categoryName . ' description')
+                ->setEnabled(true);
 
-        $manager->persist($user);
+            $manager->persist($category);
+            $this->addReference("category_$k", $category);
+        }
+
         $manager->flush();
-
-        $this->addReference('user', $user);
     }
 
     /**
@@ -52,6 +55,6 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
      */
     public function getOrder()
     {
-        return 1;
+        return 3;
     }
 }

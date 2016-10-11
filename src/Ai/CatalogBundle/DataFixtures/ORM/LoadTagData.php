@@ -16,17 +16,19 @@ namespace Ai\CatalogBundle\DataFixtures\ORM;
 use Doctrine\Common\DataFixtures\AbstractFixture;
 use Doctrine\Common\DataFixtures\OrderedFixtureInterface;
 use Doctrine\Common\Persistence\ObjectManager;
-use Ai\CatalogBundle\Entity\User;
+use Ai\CatalogBundle\Entity\Tag;
 
 /**
- * Class LoadUserData User Data Fixtures
+ * Class LoadTagData User Data Fixtures
  *
  * @package Ai\CatalogBundle\DataFixtures\ORM
  */
-class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
+class LoadTagData extends AbstractFixture implements OrderedFixtureInterface
 {
+    const TAGS = ['red', 'green', 'red'];
+
     /**
-     * Load users fixtures
+     * Load tags fixtures
      *
      * @param ObjectManager $manager
      *
@@ -34,15 +36,14 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
      */
     public function load(ObjectManager $manager)
     {
-        $user = new User();
-        $user->setUsername('admin');
-        $user->setEmail('admin@test.com');
-        $user->setPassword('123456');
+        foreach (self::TAGS as $k => $tagName) {
+            $tag = (new Tag($tagName))->setEnabled(true);
 
-        $manager->persist($user);
+            $manager->persist($tag);
+            $this->addReference("tag_$k", $tag);
+        }
+
         $manager->flush();
-
-        $this->addReference('user', $user);
     }
 
     /**
@@ -52,6 +53,6 @@ class LoadUserData extends AbstractFixture implements OrderedFixtureInterface
      */
     public function getOrder()
     {
-        return 1;
+        return 2;
     }
 }
