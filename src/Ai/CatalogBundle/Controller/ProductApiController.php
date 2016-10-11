@@ -134,10 +134,10 @@ class ProductApiController extends FOSRestController
      *     description="Gets all products",
      *     filters={
      *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr"},
-     *         {"name"="tags", "dataType"="string", "pattern"="news,articles"},
+     *         {"name"="tags",   "dataType"="string", "pattern"="news,articles"},
      *         {"name"="search", "dataType"="string"},
-     *         {"name"="page", "dataType"="integer"},
-     *         {"name"="limit", "dataType"="integer"}
+     *         {"name"="page",   "dataType"="integer"},
+     *         {"name"="limit",  "dataType"="integer"}
      *     },
      *     statusCodes={
      *         200="When successful"
@@ -145,20 +145,16 @@ class ProductApiController extends FOSRestController
      * )
      * @Get("/product", name="catalog_rest_products_getall", defaults={"_format" = "json"})
      * @View
+     *
+     * @param Request $request
+     *
+     * @return array
      */
     public function getAllAction(Request $request)
     {
-        $fields = $request->query->get("fields")
-            ? explode(',', $request->query->get("fields"))
-            : null;
-
-        $tags = $request->query->get("tags")
-            ? explode(',', $request->query->get("tags"))
-            : null;
-
         return $this->get("ai_catalog.product_manager")->findAll(
-            $fields,
-            $tags,
+            $request->query->get("fields"),
+            $request->query->get("tags"),
             $request->query->get('search'),
             $request->query->get("page"),
             $request->query->get("limit")
@@ -166,10 +162,11 @@ class ProductApiController extends FOSRestController
     }
 
     /**
-     * @param Product $product
-     *
      * @ApiDoc(
      *     description="Gets a product",
+     *     filters={
+     *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr"}
+     *     },
      *     statusCodes={
      *         404="When the product does not exist",
      *         200="When successful"
@@ -179,9 +176,17 @@ class ProductApiController extends FOSRestController
      *     requirements={"id" = "\d+"}, defaults={"_format" = "json"}
      * )
      * @View
+     *
+     * @param Product $product
+     * @param Request $request
+     * @return mixed
      */
-    public function getAction(Product $product)
+    public function getAction(Product $product, Request $request)
     {
-        return $product;
+        return $this->get("ai_catalog.product_manager")
+            ->find(
+                $product->getId(),
+                $request->query->get("fields")
+            );
     }
 }

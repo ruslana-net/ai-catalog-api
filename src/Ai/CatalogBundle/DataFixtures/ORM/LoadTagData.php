@@ -25,7 +25,7 @@ use Ai\CatalogBundle\Entity\Tag;
  */
 class LoadTagData extends AbstractFixture implements OrderedFixtureInterface
 {
-    const TAGS = ['red', 'green', 'red'];
+    const TAGS = ['red', 'green', 'white'];
 
     /**
      * Load tags fixtures

@@ -14,6 +14,7 @@
 namespace Ai\CatalogBundle\Repository;
 
 use \Doctrine\ORM\Query;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * ProductRepository
@@ -24,80 +25,87 @@ use \Doctrine\ORM\Query;
 class ProductRepository extends \Doctrine\ORM\EntityRepository
 {
     /**
-     * @param array|null  $fields     selected fields array
-     * @param array|null  $tags       search by tags name
-     * @param string|null $search     search by name and descr
-     * @param int|null    $maxResults limit
+     * @param string|null $tagsFilter search by tags name news,another tag,etc
+     * @param string|null $searchString search by name and descr
+     * @param int|null $maxResults limit
      *
      * @return Query
      */
-    public function findBySearchQuery(
-        array  $fields     = null,
-        array  $tags       = null,
-        string $search     = null,
-        int    $maxResults = null
-    ) : Query
+    public function findByFilters(
+        string $tagsFilter = null,
+        string $searchString = null,
+        int $maxResults = null
+    ) : array
     {
         $qb = $this->createQueryBuilder('a');
-
-        $metaData = $this->getClassMetadata();
-
-        $select = [];
-        if(!empty($fields)){
-            foreach($fields as $field){
-                if($metaData->hasField($field)){
-                    $select[] = "a.".trim($field);
-                }
-            }
-        }
-        $select = $select ? implode(', ', $select) : 'a.id, a.name, a.descr';
-
         $qb
-            ->select($select)
-            ->orderBy('a.position', 'DESC')
-            ->where("a.enabled=1");
+            ->select('a, c, t')
+            ->orderBy('a.position', 'ASC')
+            ->where("a.enabled=1")
+            ->leftJoin('a.category', 'c')
+            ->leftJoin('a.tags', 't');
 
-        if (!$search) {
+        //Search string filter
+        if (!$searchString) {
             $qb->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->like('a.name', ':search'),//TODO add indexes
                     $qb->expr()->like('a.descr', ':search')
                 )
             );
-            $qb->setParameter('search', $search . '%');
-        }
-        
-        if (!empty($tags)) {
-            $qb->leftJoin('a.tags', 't');
-            $orX = $qb->expr()->orX();
-
-            foreach ($tags as $k => $tag) {
-                $orX->add($qb->expr()->eq("t.name", ":tag$k"));
-                $qb->setParameter("tag$k", $tag);
-            }
-
-            if ($orX->count() > 0) {
-                $qb->andWhere($orX);
-            }
+            $qb->setParameter('search', $searchString . '%');
         }
 
+        //Tags filter
+        if ($tagsFilter !== null) {
+            $tags = $tagsFilter ? explode(',', $tagsFilter) : null;
+
+            if (!empty($tags)) {
+                $orX = $qb->expr()->orX();
+
+                foreach ($tags as $k => $tag) {
+                    $orX->add($qb->expr()->eq("t.name", ":tag$k"));
+                    $qb->setParameter("tag$k", $tag);
+                }
+
+                if ($orX->count() > 0) {
+                    $qb->andWhere($orX);
+                }
+            }
+        }
+
+        //Max limit
         if (null !== $maxResults) {
             $qb->setMaxResults($maxResults);
         }
 
-        return $qb->getQuery();
+        return $qb->getQuery()->getArrayResult();
     }
 
     /**
-     * Search by tags
+     * Get product with filtered fields
      *
-     * @param array    $tags       tags array
-     * @param int|null $maxResults limit
-     *
-     * @return Query
+     * @param $id
+     * @return array
      */
-    public function findByTags(array $tags, int $maxResults = null) : Query
+    public function findOneById($id) : array
     {
-        return $this->findBySearchQuery(null, $tags, null, $maxResults);
+        $qb = $this->createQueryBuilder('a');
+
+        $qb
+            ->select('a, c, t')
+            ->orderBy('a.position', 'ASC')
+            ->where("a.enabled=1 AND a.id=:id")
+            ->leftJoin('a.category', 'c')
+            ->leftJoin('a.tags', 't')
+            ->setParameter('id', $id);
+
+        $result = $qb->getQuery()->getArrayResult();
+
+        if(empty($result)){
+            throw new NotFoundHttpException('Product not fount');
+        }
+
+        return array_shift($result);
     }
 }
