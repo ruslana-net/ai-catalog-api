@@ -23,6 +23,7 @@ $ php app/console doctrine:fixtures:load
 ### Create OAuth client
 
 ```bash
+# create client
 php bin/console ai:oauth-server:client:create --redirect-uri=http://yourapp.com/ --grant-type=token --grant-type=password --grant-type=authorization_code --grant-type=refresh_token ClientName
 
 # get access_token
@@ -32,7 +33,7 @@ curl -X POST -d 'grant_type=password&username=your_username&password=user_passwo
 curl -X POST -d 'grant_type=refresh_token&refresh_token=your_refresh_token&client_id=your_client_id&client_secret=you_client_secret_key' http://yousite.com/oauth/token
 ```
 
-### OAuth paths
+### Paths
 ```bash
 # Api doc
 http://yoursite.com/doc/api
@@ -42,6 +43,10 @@ http://yoursite.com/oauth/token
 
 # OAuth2 auth path
 http://yoursite.com/oauth/auth
+
+# User
+http://yoursite.com/user/login
+http://yoursite.com/user/logout
 ```
 
 ## Running tests
