@@ -155,7 +155,10 @@ class ProductManager
      */
     public function create(Request $request, User $user) : View
     {
-        return $this->processForm(new Product(), $request, $user);
+        $product = new Product();
+        $product->setUser($user);
+
+        return $this->processForm($product, $request);
     }
 
     /**
@@ -175,11 +178,10 @@ class ProductManager
      *
      * @param Product $product
      * @param Request $request
-     * @param User $user
      *
      * @return View
      */
-    private function processForm(Product $product, Request $request, User $user = null)
+    private function processForm(Product $product, Request $request) : View
     {
         $isNew = null === $product->getId();
         $statusCode = $isNew ? Response::HTTP_CREATED : Response::HTTP_NO_CONTENT;
@@ -187,7 +189,7 @@ class ProductManager
         $form->handleRequest($request);
 
         if ($form->isValid()) {
-            if ($user) $product->setUser($user);
+            $product = $form->getData();
             $this->em->persist($product);
             $this->em->flush();
 
