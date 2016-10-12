@@ -42,7 +42,9 @@ class ProductApiController extends FOSRestController
      *         {"name"="enabled", "dataType"="boolean",  "required"=false, "description"="The product enabled"},
      *         {"name"="ceoTitle", "dataType"="textarea", "required"=false, "description"="The product ceo title"},
      *         {"name"="ceoDescription", "dataType"="textarea", "required"=false, "description"="The product ceo description"},
-     *         {"name"="ceoKeywords", "dataType"="textarea", "required"=false, "description"="The product ceo keywords"}
+     *         {"name"="ceoKeywords", "dataType"="string", "required"=false, "description"="The product ceo keywords"},
+     *         {"name"="category", "dataType"="string", "required"=false, "description"="The product category"},
+     *         {"name"="tags[]", "dataType"="string", "required"=false, "description"="The product tags"}
      *      },
      *      statusCodes={
      *         401="When the user is not registered",
@@ -77,7 +79,9 @@ class ProductApiController extends FOSRestController
      *         {"name"="enabled", "dataType"="boolean",  "required"=false, "description"="The product enabled"},
      *         {"name"="ceoTitle", "dataType"="textarea", "required"=false, "description"="The product ceo title"},
      *         {"name"="ceoDescription", "dataType"="textarea", "required"=false, "description"="The product ceo description"},
-     *         {"name"="ceoKeywords", "dataType"="textarea", "required"=false, "description"="The product ceo keywords"}
+     *         {"name"="ceoKeywords", "dataType"="textarea", "required"=false, "description"="The product ceo keywords"},
+     *         {"name"="category", "dataType"="string", "required"=false, "description"="The product category"},
+     *         {"name"="tags[]", "dataType"="string", "required"=false, "description"="The product tags"}
      *      },
      *      statusCodes={
      *         401="When the user is not registered",
