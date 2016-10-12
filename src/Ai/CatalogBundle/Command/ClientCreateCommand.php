@@ -18,7 +18,6 @@ use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
-use Ai\CatalogBundle\Entity\Client;
 
 /**
  * Class ClientCreateCommand create new oauth client
@@ -33,7 +32,7 @@ class ClientCreateCommand extends ContainerAwareCommand
     protected function configure()
     {
         $this
-            ->setName('acme:oauth-server:client:create')
+            ->setName('ai:oauth-server:client:create')
             ->setDescription('Creates a new client')
             ->addArgument('name', InputArgument::REQUIRED, 'Sets the client name', null)
             ->addOption('redirect-uri', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Sets redirect uri for client. Use this option multiple times to set multiple redirect URIs.', null)
