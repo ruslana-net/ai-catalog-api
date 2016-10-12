@@ -202,7 +202,7 @@ class ProductManager
                 );
             }
 
-            return \FOS\RestBundle\View\View::create($product->setUser(null), $statusCode, $headers);
+            return \FOS\RestBundle\View\View::create($product, $statusCode, $headers);//TODO remove users
         }
 
         return \FOS\RestBundle\View\View::create($form, Response::HTTP_BAD_REQUEST);
