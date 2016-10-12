@@ -13,6 +13,7 @@
 
 namespace Ai\CatalogBundle\Entity;
 
+use Ai\CatalogBundle\Traits\NameTrait;
 use FOS\OAuthServerBundle\Entity\Client as BaseClient;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -24,6 +25,8 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Client extends BaseClient
 {
+    use NameTrait;
+    
     /**
      * @var int
      *

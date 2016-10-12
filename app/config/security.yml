@@ -1,24 +1,32 @@
-# To get started with security, check out the documentation:
-# http://symfony.com/doc/current/book/security.html
 security:
+    encoders:
+        FOS\UserBundle\Model\UserInterface: sha512
 
-    # http://symfony.com/doc/current/book/security.html#where-do-users-come-from-user-providers
     providers:
-        in_memory:
-            memory: ~
+        fos_userbundle:
+            id: fos_user.user_provider.username
 
     firewalls:
-        # disables authentication for assets and the profiler, adapt it according to your needs
-        dev:
-            pattern: ^/(_(profiler|wdt)|css|images|js)/
-            security: false
+        oauth_token:
+            pattern:    ^/oauth/token
+            security:   false
 
-        main:
-            anonymous: ~
-            # activate different ways to authenticate
+        api:
+            pattern:   ^/api
+            stateless: true
+            fos_oauth: true
+            anonymous: false
 
-            # http_basic: ~
-            # http://symfony.com/doc/current/book/security.html#a-configuring-how-your-users-will-authenticate
+        security:
+            pattern:    ^/
+            security:   true
+            form_login:
+                provider:       fos_userbundle
+                login_path:     fos_user_security_login
+                check_path:     fos_user_security_check
+            logout:
+                path:   /user/logout
+            anonymous: true
 
-            # form_login: ~
-            # http://symfony.com/doc/current/cookbook/security/form_login_setup.html
+    access_control:
+        - { path: ^/oauth/auth$, roles: IS_AUTHENTICATED_FULLY }

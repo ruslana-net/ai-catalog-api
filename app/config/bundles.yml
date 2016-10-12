@@ -26,12 +26,7 @@ fos_oauth_server:
 
 # Rest
 fos_rest:
-    param_fetcher_listener: true
-    format_listener:
-        rules:
-            fallback_format: json
-            prefer_extension: false
-            priorities: [json]
+    body_listener: true
     view:
         view_response_listener: force
 

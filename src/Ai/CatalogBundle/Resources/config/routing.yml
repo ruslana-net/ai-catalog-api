@@ -1,3 +1,50 @@
-ai_catalog_homepage:
-    path:     /
-    defaults: { _controller: AiCatalogBundle:Default:index }
+# Root path
+default:
+    path: /
+    defaults: {_controller: FrameworkBundle:Redirect:redirect, route: nelmio_api_doc_index, permanent: true}
+
+# ApiDocs
+nelmio_api_doc_index:
+    path: /doc/api/{view}
+    defaults: { _controller: NelmioApiDocBundle:ApiDoc:index, view: 'default' }
+    methods: [GET]
+
+# OAuth
+fos_oauth_server_token:
+    path: /oauth/token
+    defaults: { _controller: fos_oauth_server.controller.token:tokenAction }
+    methods: [POST, GET]
+
+fos_oauth_server_authorize:
+    path: /oauth/auth
+    defaults: { _controller: FOSOAuthServerBundle:Authorize:authorize }
+    methods: [POST, GET]
+
+# FosUser
+fos_user_security_login:
+    path: /user/login
+    defaults: { _controller: FOSUserBundle:Security:login }
+    methods: [GET, POST]
+
+
+fos_user_security_check:
+    path: /user/login_check
+    defaults: { _controller: FOSUserBundle:Security:check }
+    methods: [POST]
+
+
+fos_user_security_logout:
+    path: /user/logout
+    defaults: { _controller: FOSUserBundle:Security:logout }
+    methods: [GET, POST]
+
+fos_user_profile_show:
+    path: /user/show
+    defaults: { _controller: FOSUserBundle:Profile:show }
+    methods: [GET]
+
+# Product API
+catalog_rest_products:
+    resource: "@AiCatalogBundle/Controller/ProductApiController.php"
+    prefix:   /api
+    type:     annotation
