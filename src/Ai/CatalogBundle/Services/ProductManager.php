@@ -15,9 +15,14 @@ namespace Ai\CatalogBundle\Services;
 
 use Ai\CatalogBundle\Entity\Product;
 use Ai\CatalogBundle\Entity\User;
+use Ai\CatalogBundle\Form\Type\ProductType;
+use Doctrine\ORM\EntityManagerInterface;
+use FOS\RestBundle\View\View;
 use Knp\Component\Pager\PaginatorInterface;
-use Doctrine\ORM\EntityManager;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Symfony\Component\Form\FormFactoryInterface;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\RouterInterface;
 
 /**
  * Class ProductManager
@@ -26,28 +31,59 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 class ProductManager
 {
+    /**
+     * Items number on the page
+     *
+     * var int
+     */
     const numItemsPerPage = 10;
 
+    /**
+     * @var EntityManagerInterface
+     */
     protected $em;
 
+    /**
+     * @var PaginatorInterface
+     */
     protected $paginator;
+
+    /**
+     * @var FormFactoryInterface
+     */
+    protected $formFactory;
+
+    /**
+     * @var RouterInterface
+     */
+    protected $router;
 
     /**
      * ProductManager constructor.
      *
-     * @param EntityManager $em
+     * @param EntityManagerInterface $em
+     * @param PaginatorInterface $paginator
+     * @param FormFactoryInterface $formFactory
+     * @param RouterInterface $router
      */
-    public function __construct(EntityManager $em, PaginatorInterface $paginator)
+    public function __construct(
+        EntityManagerInterface $em,
+        PaginatorInterface $paginator,
+        FormFactoryInterface $formFactory,
+        RouterInterface $router
+    )
     {
         $this->em = $em;
         $this->paginator = $paginator;
+        $this->formFactory = $formFactory;
+        $this->router = $router;
     }
 
     /**
      * Get all filtered products
      *
      * @param string $fieldsFilter selected fields id,name,descr,category,tags,etc
-     * @param string $tagsFilter   search by tags name news,anothe tag,etc
+     * @param string $tagsFilter search by tags name news,anothe tag,etc
      * @param string $searchString search by product name and description
      * @param int $page page num
      * @param int $limit num per page
@@ -56,7 +92,7 @@ class ProductManager
      */
     public function findAll(
         string $fieldsFilter = null,
-        string $tagsFilter   = null,
+        string $tagsFilter = null,
         string $searchString = null,
         int $page = null,
         int $limit = null
@@ -86,7 +122,7 @@ class ProductManager
 
     /**
      * Get one product by id
-     * 
+     *
      * @param $id
      * @param string|null $fields
      * @return mixed
@@ -100,24 +136,6 @@ class ProductManager
             , $fields);
     }
 
-    public function create(array $data, User $user) : bool
-    {
-        $data = [
-            'name' => 'New product',
-            'descr' => 'New product descr',
-            'price' => 245.04,
-            'category' => 'New Category',
-            'tags' => ['article', 'news', 'economic', 'politic']
-        ];
-
-
-    }
-
-    public function update(Product $product, array $data) : bool
-    {
-
-    }
-
     /**
      * @param Product $product
      */
@@ -125,6 +143,67 @@ class ProductManager
     {
         $this->em->remove($product);
         $this->em->flush();
+    }
+
+    /**
+     * Create product
+     *
+     * @param Request $request
+     * @param User $user
+     *
+     * @return View
+     */
+    public function create(Request $request, User $user) : View
+    {
+        return $this->processForm(new Product(), $request, $user);
+    }
+
+    /**
+     * Update product
+     *
+     * @param Product $product
+     * @param Request $request
+     * @return View
+     */
+    public function update(Product $product, Request $request) : View
+    {
+        return $this->processForm($product, $request);
+    }
+
+    /**
+     * Create or update product by request data
+     *
+     * @param Product $product
+     * @param Request $request
+     * @param User $user
+     *
+     * @return View
+     */
+    private function processForm(Product $product, Request $request, User $user = null)
+    {
+        $isNew = null === $product->getId();
+        $statusCode = $isNew ? Response::HTTP_CREATED : Response::HTTP_NO_CONTENT;
+        $form = $this->formFactory->createNamed('', ProductType::class, $product);
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+            if ($user) $product->setUser($user);
+            $this->em->persist($product);
+            $this->em->flush();
+
+            $headers = array();
+            if ($isNew) {
+                $headers['Location'] = $this->router->generate(
+                    'catalog_rest_product_get',
+                    array('id' => $product->getId()),
+                    true
+                );
+            }
+
+            return \FOS\RestBundle\View\View::create($product->setUser(null), $statusCode, $headers);
+        }
+
+        return \FOS\RestBundle\View\View::create($form, Response::HTTP_BAD_REQUEST);
     }
 
     /**

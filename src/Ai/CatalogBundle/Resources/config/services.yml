@@ -1,4 +1,9 @@
 services:
     ai_catalog.product_manager:
         class: Ai\CatalogBundle\Services\ProductManager
-        arguments: ["@doctrine.orm.default_entity_manager", "@knp_paginator"]
+        arguments: ["@doctrine.orm.default_entity_manager", "@knp_paginator", "@form.factory", "@router"]
+
+    ai_catalog.form.type.product:
+        class: Ai\CatalogBundle\Form\Type\ProductType
+        tags:
+            - { name: form.type, alias: ai_catalog_product }

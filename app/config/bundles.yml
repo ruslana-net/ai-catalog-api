@@ -31,4 +31,15 @@ fos_rest:
         view_response_listener: force
 
 # Api Doc
-nelmio_api_doc: ~
+nelmio_api_doc:
+    name: Catalog API documentation
+    sandbox:
+        request_format:
+            formats:
+                json:                application/json
+                xml:                 application/xml
+            method: accept_header # One of "format_param"; "accept_header"
+            default_format:       json
+        authentication:
+            delivery: http
+            type:     bearer

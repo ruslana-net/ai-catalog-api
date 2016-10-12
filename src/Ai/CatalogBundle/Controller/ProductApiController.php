@@ -17,7 +17,6 @@ use Ai\CatalogBundle\Entity\Product;
 use Ai\CatalogBundle\Services\ProductManager;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
-use Symfony\Component\Security\Core\Authentication\Token\Storage\TokenStorageInterface;
 use FOS\RestBundle\Controller\FOSRestController;
 use FOS\RestBundle\Controller\Annotations\View;
 use Nelmio\ApiDocBundle\Annotation\ApiDoc;
@@ -34,15 +33,16 @@ use FOS\RestBundle\Controller\Annotations\Put;
 class ProductApiController extends FOSRestController
 {
     /**
-     * @param Request $request
-     * @throws AccessDeniedException
-     *
      * @ApiDoc(
      *     description="Creates a product for the authenticated user",
      *     parameters={
      *         {"name"="name", "dataType"="string",  "required"=true,  "description"="The product name"},
-     *         {"name"="descr", "dataType"="string", "required"=false, "description"="The product description"},
-     *         {"name"="price", "dataType"="float",  "required"=false, "description"="The product price"}
+     *         {"name"="descr", "dataType"="textarea", "required"=false, "description"="The product description"},
+     *         {"name"="price", "dataType"="string",  "required"=false, "description"="The product price"},
+     *         {"name"="enabled", "dataType"="boolean",  "required"=false, "description"="The product enabled"},
+     *         {"name"="ceoTitle", "dataType"="textarea", "required"=false, "description"="The product ceo title"},
+     *         {"name"="ceoDescription", "dataType"="textarea", "required"=false, "description"="The product ceo description"},
+     *         {"name"="ceoKeywords", "dataType"="textarea", "required"=false, "description"="The product ceo keywords"}
      *      },
      *      statusCodes={
      *         401="When the user is not registered",
@@ -52,6 +52,10 @@ class ProductApiController extends FOSRestController
      *     }
      * )
      * @Post("/product", name="catalog_rest_product_create", defaults={"_format" = "json"})
+     *
+     * @param Request $request
+     *
+     * @return \FOS\RestBundle\View\View
      */
     public function createAction(Request $request)
     {
@@ -64,16 +68,16 @@ class ProductApiController extends FOSRestController
     }
 
     /**
-     * @param Request $request
-     * @param Product $product
-     * @throws AccessDeniedException
-     *
      * @ApiDoc(
      *     description="Updates a product of the authenticated user",
      *     parameters={
-     *         {"name"="title", "dataType"="string", "required"=true, "description"="The product title"},
-     *         {"name"="descr", "dataType"="string", "required"=true, "description"="The product description"},
-     *         {"name"="price", "dataType"="float",  "required"=true, "description"="The product price"}
+     *         {"name"="name", "dataType"="string",  "required"=true,  "description"="The product name"},
+     *         {"name"="descr", "dataType"="textarea", "required"=false, "description"="The product description"},
+     *         {"name"="price", "dataType"="string",  "required"=false, "description"="The product price"},
+     *         {"name"="enabled", "dataType"="boolean",  "required"=false, "description"="The product enabled"},
+     *         {"name"="ceoTitle", "dataType"="textarea", "required"=false, "description"="The product ceo title"},
+     *         {"name"="ceoDescription", "dataType"="textarea", "required"=false, "description"="The product ceo description"},
+     *         {"name"="ceoKeywords", "dataType"="textarea", "required"=false, "description"="The product ceo keywords"}
      *      },
      *      statusCodes={
      *         401="When the user is not registered",
@@ -83,6 +87,11 @@ class ProductApiController extends FOSRestController
      *     }
      * )
      * @Put("/product/{id}", name="catalog_rest_product_update", defaults={"_format" = "json"})
+     *
+     * @param Request $request
+     * @param Product $product
+     *
+     * @return \FOS\RestBundle\View\View
      */
     public function updateAction(Request $request, Product $product)
     {
@@ -113,6 +122,8 @@ class ProductApiController extends FOSRestController
      *     requirements={"id" = "\d+"}, defaults={"_format" = "json"}
      * )
      * @View(statusCode=204)
+     *
+     * @param Product $product
      */
     public function deleteAction(Product $product)
     {
@@ -133,7 +144,7 @@ class ProductApiController extends FOSRestController
      * @ApiDoc(
      *     description="Gets all products",
      *     filters={
-     *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr"},
+     *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr,category,tags"},
      *         {"name"="tags",   "dataType"="string", "pattern"="news,articles"},
      *         {"name"="search", "dataType"="string"},
      *         {"name"="page",   "dataType"="integer"},
