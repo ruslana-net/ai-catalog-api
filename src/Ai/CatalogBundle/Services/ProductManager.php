@@ -18,6 +18,7 @@ use Ai\CatalogBundle\Entity\User;
 use Ai\CatalogBundle\Form\Type\ProductType;
 use Doctrine\ORM\EntityManagerInterface;
 use FOS\RestBundle\View\View;
+use JMS\Serializer\SerializerBuilder;
 use Knp\Component\Pager\PaginatorInterface;
 use Symfony\Component\Form\FormFactoryInterface;
 use Symfony\Component\HttpFoundation\Request;
@@ -137,6 +138,8 @@ class ProductManager
     }
 
     /**
+     * Delete product
+     * 
      * @param Product $product
      */
     public function delete(Product $product)
@@ -202,10 +205,13 @@ class ProductManager
                 );
             }
 
-            return \FOS\RestBundle\View\View::create($product, $statusCode, $headers);//TODO remove users
+            $serializer = SerializerBuilder::create()->build();
+            $data = self::productFieldsFilter($serializer->toArray($product), null, 'user,products');
+
+            return View::create($data, $statusCode, $headers);
         }
 
-        return \FOS\RestBundle\View\View::create($form, Response::HTTP_BAD_REQUEST);
+        return View::create($form, Response::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -213,23 +219,29 @@ class ProductManager
      *
      * @param array $products
      * @param string|null $fields
+     * @param string|null $excludeFields
      *
      * @return array
      */
-    protected static function productFieldsFilter(array $products, string $fields = null) : array
+    protected static function productFieldsFilter(array $products, string $fields = null, string $excludeFields = null) : array
     {
-        if ($fields === null || empty($products))
+        if (($fields === null && $excludeFields === null) || empty($products))
             return $products;
 
         $fields = explode(',', str_replace(' ', '', $fields));
+        $excludeFields = explode(',', str_replace(' ', '', $excludeFields));
 
         return self::array_filter_recursive($products,
-            function ($key) use ($fields) {
+            function ($key) use ($fields, $excludeFields) {
                 if (is_int($key)) {
                     return true;
-                } else {
-                    return in_array($key, $fields);
+                } elseif(in_array($key, $excludeFields)){
+                    return false;
+                } elseif(in_array($key, $fields)) {
+                    return true;
                 }
+
+                return true;
             }
             , ARRAY_FILTER_USE_KEY);
     }

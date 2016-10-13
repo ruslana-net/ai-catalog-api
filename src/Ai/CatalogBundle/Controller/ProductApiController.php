@@ -192,15 +192,15 @@ class ProductApiController extends FOSRestController
      * )
      * @View
      *
-     * @param Product $product
+     * @param int $id
      * @param Request $request
      * @return mixed
      */
-    public function getAction(Product $product, Request $request)
+    public function getAction(int $id, Request $request)
     {
         return $this->get("ai_catalog.product_manager")
             ->find(
-                $product->getId(),
+                $id,
                 $request->query->get("fields")
             );
     }
