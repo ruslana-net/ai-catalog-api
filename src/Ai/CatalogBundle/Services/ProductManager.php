@@ -139,7 +139,7 @@ class ProductManager
 
     /**
      * Delete product
-     * 
+     *
      * @param Product $product
      */
     public function delete(Product $product)
@@ -188,7 +188,13 @@ class ProductManager
     {
         $isNew = null === $product->getId();
         $statusCode = $isNew ? Response::HTTP_CREATED : Response::HTTP_NO_CONTENT;
-        $form = $this->formFactory->createNamed('', ProductType::class, $product);
+        $method = $isNew ? 'POST' : 'PUT';
+        $form = $this->formFactory->createNamed(
+            '',
+            ProductType::class,
+            $product,
+            ['method' => $method]
+        );
         $form->handleRequest($request);
 
         if ($form->isValid()) {
@@ -205,13 +211,10 @@ class ProductManager
                 );
             }
 
-            $serializer = SerializerBuilder::create()->build();
-            $data = self::productFieldsFilter($serializer->toArray($product), null, 'user,products');
-
-            return View::create($data, $statusCode, $headers);
+            return View::create($product, $statusCode, $headers);
         }
 
-        return View::create($form, Response::HTTP_BAD_REQUEST);
+        return View::create($form->getErrors(true, false), Response::HTTP_BAD_REQUEST);
     }
 
     /**
@@ -219,29 +222,26 @@ class ProductManager
      *
      * @param array $products
      * @param string|null $fields
-     * @param string|null $excludeFields
      *
      * @return array
      */
-    protected static function productFieldsFilter(array $products, string $fields = null, string $excludeFields = null) : array
+    protected static function productFieldsFilter(
+        array $products,
+        string $fields = null
+    ) : array
     {
-        if (($fields === null && $excludeFields === null) || empty($products))
+        if ($fields === null || empty($products))
             return $products;
 
         $fields = explode(',', str_replace(' ', '', $fields));
-        $excludeFields = explode(',', str_replace(' ', '', $excludeFields));
 
         return self::array_filter_recursive($products,
-            function ($key) use ($fields, $excludeFields) {
+            function ($key) use ($fields) {
                 if (is_int($key)) {
                     return true;
-                } elseif(in_array($key, $excludeFields)){
-                    return false;
-                } elseif(in_array($key, $fields)) {
-                    return true;
+                } else {
+                    return in_array($key, $fields);
                 }
-
-                return true;
             }
             , ARRAY_FILTER_USE_KEY);
     }
@@ -266,7 +266,11 @@ class ProductManager
      *
      * @return array
      */
-    protected static function array_filter_recursive(array $array, callable $callback = null, $flag = 0) : array
+    protected static function array_filter_recursive(
+        array $array,
+        callable $callback = null,
+        $flag = 0
+    ) : array
     {
         $array = is_callable($callback) ? array_filter($array, $callback, $flag) : array_filter($array);
         foreach ($array as &$value) {

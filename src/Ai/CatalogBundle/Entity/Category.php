@@ -22,6 +22,7 @@ use Ai\CatalogBundle\Traits\NameTrait;
 use Ai\CatalogBundle\Traits\PositionTrait;
 use Ai\CatalogBundle\Traits\TstampTrait;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Exclude;
 
 /**
  * Category entity
@@ -50,6 +51,7 @@ class Category
     private $id;
 
     /**
+     * @Exclude
      * @ORM\OneToMany(targetEntity="Product", mappedBy="category")
      **/
     private $products;

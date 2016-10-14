@@ -18,11 +18,11 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 
 /**
- * Class ProductType
+ * Class CategoryType
  *
- * @package Ai\CatalogBundle\Form\Type
+ * @package Ai\CatalogBundle\Form
  */
-class ProductType extends AbstractType
+class CategoryType extends AbstractType
 {
     /**
      * Form building
@@ -34,14 +34,7 @@ class ProductType extends AbstractType
     {
         $builder
             ->add('name')
-            ->add('descr')
-            ->add('price')
             ->add('enabled')
-            ->add('ceoTitle')
-            ->add('ceoKeywords')
-            ->add('ceoDescription')
-            ->add('category')
-            ->add('tags')
         ;
     }
     
@@ -53,7 +46,7 @@ class ProductType extends AbstractType
     public function configureOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
-            'data_class' => 'Ai\CatalogBundle\Entity\Product',
+            'data_class' => 'Ai\CatalogBundle\Entity\Category',
             'csrf_protection'   => false
         ));
     }
@@ -65,6 +58,6 @@ class ProductType extends AbstractType
      */
     public function getName()
     {
-        return 'ai_catalog_product';
+        return 'ai_catalog_category';
     }
 }

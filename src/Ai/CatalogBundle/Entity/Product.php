@@ -23,6 +23,7 @@ use Ai\CatalogBundle\Traits\PositionTrait;
 use Ai\CatalogBundle\Traits\PriceTrait;
 use Ai\CatalogBundle\Traits\TstampTrait;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Exclude;
 
 /**
  * Product entity
@@ -52,6 +53,7 @@ class Product
     private $id;
 
     /**
+     * @Exclude
      * @ORM\ManyToOne(targetEntity="User", inversedBy="products")
      * @ORM\JoinColumn(name="user_id", referencedColumnName="id", onDelete="SET NULL")
      **/

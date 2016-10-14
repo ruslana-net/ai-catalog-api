@@ -19,6 +19,7 @@ use Ai\CatalogBundle\Traits\NameSlugTrait;
 use Ai\CatalogBundle\Traits\NameTrait;
 use Ai\CatalogBundle\Traits\TstampTrait;
 use Doctrine\ORM\Mapping as ORM;
+use JMS\Serializer\Annotation\Exclude;
 
 /**
  * Tag entity
@@ -44,6 +45,7 @@ class Tag
     private $id;
 
     /**
+     * @Exclude
      * @ORM\ManyToMany(targetEntity="Product", mappedBy="tags")
      */
     private $products;
