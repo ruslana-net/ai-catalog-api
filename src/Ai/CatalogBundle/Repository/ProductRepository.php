@@ -41,12 +41,11 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
         $qb
             ->select('a, c, t')
             ->orderBy('a.position', 'ASC')
-            ->where("a.enabled=1")
             ->leftJoin('a.category', 'c')
             ->leftJoin('a.tags', 't');
 
         //Search string filter
-        if (!$searchString) {
+        if ($searchString !== null) {
             $qb->andWhere(
                 $qb->expr()->orX(
                     $qb->expr()->like('a.name', ':search'),//TODO add indexes
@@ -78,7 +77,7 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
         if (null !== $maxResults) {
             $qb->setMaxResults($maxResults);
         }
-
+        
         return $qb->getQuery()->getArrayResult();
     }
 
@@ -95,7 +94,7 @@ class ProductRepository extends \Doctrine\ORM\EntityRepository
         $qb
             ->select('a, c, t')
             ->orderBy('a.position', 'ASC')
-            ->where("a.enabled=1 AND a.id=:id")
+            ->where("a.id=:id")
             ->leftJoin('a.category', 'c')
             ->leftJoin('a.tags', 't')
             ->setParameter('id', $id);
