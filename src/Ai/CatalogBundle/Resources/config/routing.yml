@@ -48,3 +48,15 @@ catalog_rest_products:
     resource: "@AiCatalogBundle/Controller/ProductApiController.php"
     prefix:   /api
     type:     annotation
+
+# Tag API
+catalog_rest_tags:
+    resource: "@AiCatalogBundle/Controller/TagApiController.php"
+    prefix:   /api
+    type:     annotation
+
+# Category API
+catalog_rest_categories:
+    resource: "@AiCatalogBundle/Controller/CategoryApiController.php"
+    prefix:   /api
+    type:     annotation

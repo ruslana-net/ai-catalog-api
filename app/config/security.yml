@@ -11,11 +11,17 @@ security:
             pattern:    ^/oauth/token
             security:   false
 
-        api:
+        api_get:
+            pattern:   ^/api
+            security:   false
+            methods: [GET]
+
+        api_secured:
             pattern:   ^/api
             stateless: true
             fos_oauth: true
             anonymous: false
+            methods: [POST, PUT, DELETE]
 
         security:
             pattern:    ^/

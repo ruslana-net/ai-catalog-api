@@ -34,6 +34,7 @@ class CategoryType extends AbstractType
     {
         $builder
             ->add('name')
+            ->add('descr')
             ->add('enabled')
         ;
     }

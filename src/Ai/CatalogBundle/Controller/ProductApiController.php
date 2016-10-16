@@ -32,6 +32,68 @@ use FOS\RestBundle\Controller\Annotations\Put;
  */
 class ProductApiController extends FOSRestController
 {
+
+    /**
+     * @ApiDoc(
+     *     description="Gets all products",
+     *     filters={
+     *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr,category,tags"},
+     *         {"name"="tags",   "dataType"="string", "pattern"="news,articles"},
+     *         {"name"="search", "dataType"="string"},
+     *         {"name"="page",   "dataType"="integer"},
+     *         {"name"="limit",  "dataType"="integer"}
+     *     },
+     *     statusCodes={
+     *         200="When successful"
+     *     }
+     * )
+     * @Get("/product", name="catalog_rest_products_getall", defaults={"_format" = "json"})
+     * @View
+     *
+     * @param Request $request
+     *
+     * @return array
+     */
+    public function getAllAction(Request $request)
+    {
+        return $this->get("ai_catalog.product_manager")->findAll(
+            $request->query->get("fields"),
+            $request->query->get("tags"),
+            $request->query->get('search'),
+            $request->query->get("page"),
+            $request->query->get("limit")
+        );
+    }
+
+    /**
+     * @ApiDoc(
+     *     description="Gets a product",
+     *     filters={
+     *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr"}
+     *     },
+     *     statusCodes={
+     *         404="When the product does not exist",
+     *         200="When successful"
+     *     }
+     * )
+     * @Get("/product/{id}", name="catalog_rest_product_get",
+     *     requirements={"id" = "\d+"}, defaults={"_format" = "json"}
+     * )
+     * @View
+     *
+     * @param int $id
+     * @param Request $request
+     * @return mixed
+     */
+    public function getAction(int $id, Request $request)
+    {
+        return $this->get("ai_catalog.product_manager")
+            ->find(
+                $id,
+                $request->query->get("fields")
+            );
+    }
+    
     /**
      * @ApiDoc(
      *     description="Creates a product for the authenticated user",
@@ -142,66 +204,5 @@ class ProductApiController extends FOSRestController
         }
 
         return $this->get("ai_catalog.product_manager")->delete($product);
-    }
-
-    /**
-     * @ApiDoc(
-     *     description="Gets all products",
-     *     filters={
-     *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr,category,tags"},
-     *         {"name"="tags",   "dataType"="string", "pattern"="news,articles"},
-     *         {"name"="search", "dataType"="string"},
-     *         {"name"="page",   "dataType"="integer"},
-     *         {"name"="limit",  "dataType"="integer"}
-     *     },
-     *     statusCodes={
-     *         200="When successful"
-     *     }
-     * )
-     * @Get("/product", name="catalog_rest_products_getall", defaults={"_format" = "json"})
-     * @View
-     *
-     * @param Request $request
-     *
-     * @return array
-     */
-    public function getAllAction(Request $request)
-    {
-        return $this->get("ai_catalog.product_manager")->findAll(
-            $request->query->get("fields"),
-            $request->query->get("tags"),
-            $request->query->get('search'),
-            $request->query->get("page"),
-            $request->query->get("limit")
-        );
-    }
-
-    /**
-     * @ApiDoc(
-     *     description="Gets a product",
-     *     filters={
-     *         {"name"="fields", "dataType"="string", "pattern"="id,name,descr"}
-     *     },
-     *     statusCodes={
-     *         404="When the product does not exist",
-     *         200="When successful"
-     *     }
-     * )
-     * @Get("/product/{id}", name="catalog_rest_product_get",
-     *     requirements={"id" = "\d+"}, defaults={"_format" = "json"}
-     * )
-     * @View
-     *
-     * @param int $id
-     * @param Request $request
-     * @return mixed
-     */
-    public function getAction(int $id, Request $request)
-    {
-        return $this->get("ai_catalog.product_manager")
-            ->find(
-                $id,
-                $request->query->get("fields")
-            );
     }
 }
